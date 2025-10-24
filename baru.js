@@ -473,15 +473,10 @@ client.on('message', async (msg) => {
       if (attendanceData.length > 0) {
         attendanceData.forEach(record => {
           const date = new Date(record.tgl_presensi).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit' });
-
-          // FIX: Gabungkan tgl_presensi (YYYY-MM-DD) dan jam_in (HH:MM:SS)
-          // agar menjadi format ISO yang valid: "YYYY-MM-DDTHH:MM:SS"
-          const jamInStr = record.jam_in ? `${record.tgl_presensi}T${record.jam_in}` : null;
-          const jamOutStr = record.jam_out ? `${record.tgl_presensi}T${record.jam_out}` : null;
-
+         
           // Sekarang new Date() akan valid
-          const jamIn = jamInStr ? new Date(jamInStr).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '-';
-          const jamOut = jamOutStr ? new Date(jamOutStr).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '-';
+          const jamIn = record.jam_in ? record.jam_in.substring(0, 5) : '-';
+          const jamOut = record.jam_out ? record.jam_out.substring(0, 5) : '-'; 
           
           responseMessage += `Tanggal: ${date}, Masuk: ${jamIn}, Pulang: ${jamOut}\n`;
         });
