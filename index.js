@@ -165,40 +165,26 @@ async function hasBeenGreetedToday(rawPhone) {
   let connection;
   try {
     connection = await db.getConnection();
-
-    // Normalisasi nomor
+    // store phone key as cleaned digits (no @c.us) to avoid '@c.us' mismatch
     const phoneKey = String(rawPhone).replace('@c.us', '').replace(/\D/g, '');
-    // Gunakan tanggal lokal Asia/Jakarta langsung tanpa moment()
-    const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' }); // YYYY-MM-DD
+    const today = moment().format('YYYY-MM-DD');
 
-    const [rows] = await connection.execute(
-      'SELECT last_date FROM last_greeting WHERE phone = ?',
-      [phoneKey]
-    );
-
-    if (rows.length > 0 && rows[0].last_date) {
-      const dbDate = new Date(rows[0].last_date).toISOString().split('T')[0];
-      if (dbDate === today) {
-        console.log(`Sudah disapa hari ini (${today}) untuk ${phoneKey}`);
-        return true;
-      }
+    const [rows] = await connection.execute('SELECT last_date FROM last_greeting WHERE phone = ?', [phoneKey]);
+    if (rows.length > 0 && rows[0].last_date && moment(rows[0].last_date).format('YYYY-MM-DD') === today) {
+      return true;
     }
 
-    // jika belum, update sekarang
-    await connection.execute(
-      'REPLACE INTO last_greeting (phone, last_date) VALUES (?, ?)',
-      [phoneKey, today]
-    );
-    console.log(`Belum disapa hari ini, menyimpan tanggal ${today} untuk ${phoneKey}`);
+    // REPLACE INTO — jika belum ada akan insert, jika ada akan update
+    await connection.execute('REPLACE INTO last_greeting (phone, last_date) VALUES (?, ?)', [phoneKey, today]);
     return false;
   } catch (err) {
     console.error('hasBeenGreetedToday error:', err.message || err);
+    // jika error, agar tidak mengabaikan sapaan, kembalikan false sehingga bot tetap menyapa
     return false;
   } finally {
     if (connection) connection.release();
   }
 }
-
 
 // ========== Helper: Format nomor untuk pengiriman WA ==========
 function formatPhoneNumberForWhatsApp(phone) {
