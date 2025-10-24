@@ -489,29 +489,36 @@ client.on('message', async (msg) => {
     }
 
     if (text === '/infosakit_cutibulanini') {
-      const currentMonth = new Date().getMonth() + 1;
-      const currentYear = new Date().getFullYear();
-      const leaveData = await getMonthlyLeave(employee.nik, currentMonth, currentYear);
+    const currentMonth = new Date().getMonth() + 1;
+    const currentYear = new Date().getFullYear();
+    const izinData = await getMonthlyIzin(employee.nik, currentMonth, currentYear);
 
-      let responseMessage = `*Informasi Cuti/Sakit ${employee.nama_lengkap} Bulan Ini (${currentMonth}/${currentYear}):*\n\n`;
-      if (leaveData.length > 0) {
-        leaveData.forEach(record => {
-          const date = new Date(record.tgl_izin).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit' });
-          let statusApprovedText = '';
-          if (record.status_approved === 0) statusApprovedText = 'Pending';
-          else if (record.status_approved === 1) statusApprovedText = 'Disetujui';
-          else if (record.status_approved === 2) statusApprovedText = 'Ditolak';
-          else statusApprovedText = 'Tidak Diketahui';
+    let responseMessage = `*Informasi Cuti/Sakit ${employee.nama_lengkap}*\n*Bulan Ini (${new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })})*\n\n`;
 
-          responseMessage += `Tanggal: ${date}, Jenis: ${record.status}, Keterangan: ${record.keterangan || '-'}, Status: ${statusApprovedText}\n`;
-        });
-      } else {
-        responseMessage += 'Tidak ada pengajuan cuti/sakit untuk bulan ini.';
-      }
-      await msg.reply(responseMessage);
-      if (msg.id) repliedMessages.add(msg.id._serialized);
-return;
- }
+    if (izinData.length > 0) {
+        izinData.forEach(record => {
+        const tanggal = new Date(record.tgl_izin).toLocaleDateString('id-ID', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        });
+
+        // 🟢 Konversi kode ke teks
+        const jenis = record.status === 'i' ? 'Izin' : record.status === 's' ? 'Sakit' : '-';
+        const statusMap = { 0: 'Pending', 1: 'Approved', 2: 'Rejected' };
+        const statusText = statusMap[record.status_approved] || 'Tidak Diketahui';
+
+        responseMessage += `📅 *Tanggal:* ${tanggal}\n🩺 *Jenis:* ${jenis}\n📝 *Keterangan:* ${record.keterangan}\n✅ *Status:* ${statusText}\n\n`;
+        });
+    } else {
+        responseMessage += '_Tidak ada data cuti/sakit untuk bulan ini._';
+    }
+
+    await msg.reply(responseMessage.trim());
+    if (msg.id) repliedMessages.add(msg.id._serialized);
+    return;
+    }
+
 
     // Jika bukan command di atas -> fallback ke Gemini (jika tersedia) atau pesan default
     if (text && text.length > 1) {
