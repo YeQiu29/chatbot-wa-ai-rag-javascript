@@ -488,29 +488,39 @@ client.on('message', async (msg) => {
     const text = (msg.body || '').toString().trim();
 
     if (text === '/infoabsensi_bulanini') {
-      // ambil data bulanan dan kirim rekap
-      const currentMonth = new Date().getMonth() + 1;
-      const currentYear = new Date().getFullYear();
-      const attendanceData = await getMonthlyAttendance(employee.nik, currentMonth, currentYear);
+        const currentMonth = new Date().getMonth() + 1;
+        const currentYear = new Date().getFullYear();
+        const attendanceData = await getMonthlyAttendance(employee.nik, currentMonth, currentYear);
 
-      let responseMessage = `*Absensi ${employee.nama_lengkap} Bulan Ini (${currentMonth}/${currentYear}):*\n\n`;
-      if (attendanceData.length > 0) {
-        attendanceData.forEach(record => {
-          const date = new Date(record.tgl_presensi).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit' });
-         
-          // Sekarang new Date() akan valid
-          const jamIn = record.jam_in ? record.jam_in.substring(0, 5) : '-';
-          const jamOut = record.jam_out ? record.jam_out.substring(0, 5) : '-'; 
-          
-          responseMessage += `Tanggal: ${date}, Masuk: ${jamIn}, Pulang: ${jamOut}\n`;
-        });
-      } else {
-        responseMessage += 'Tidak ada data absensi untuk bulan ini.';
-      }
-      await msg.reply(responseMessage);
-      if (msg.id) repliedMessages.add(msg.id._serialized);
-      return;
-    }
+        let responseMessage = `*📅 Absensi ${employee.nama_lengkap} Bulan Ini (${currentMonth}/${currentYear}):*\n\n`;
+
+        if (attendanceData.length > 0) {
+            attendanceData.forEach(record => {
+            const date = new Date(record.tgl_presensi).toLocaleDateString('id-ID', {
+                day: '2-digit',
+                month: '2-digit'
+            });
+
+            const jamInStr = record.jam_in ? `${record.tgl_presensi}T${record.jam_in}` : null;
+            const jamOutStr = record.jam_out ? `${record.tgl_presensi}T${record.jam_out}` : null;
+
+            const jamIn = jamInStr
+                ? new Date(jamInStr).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
+                : '-';
+            const jamOut = jamOutStr
+                ? new Date(jamOutStr).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
+                : '-';
+
+            responseMessage += `🗓️ *Tanggal:* ${date}\n⏰ *Masuk:* ${jamIn}\n🏁 *Pulang:* ${jamOut}\n\n`;
+            });
+        } else {
+            responseMessage += 'Tidak ada data absensi untuk bulan ini.';
+        }
+
+        await msg.reply(responseMessage);
+        if (msg.id) repliedMessages.add(msg.id._serialized);
+        return;
+        }
 
     if (text === '/infosakit_cutibulanini') {
     const currentMonth = new Date().getMonth() + 1;
