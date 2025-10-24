@@ -246,6 +246,25 @@ async function getMonthlyLeave(nik, month, year) {
   }
 }
 
+// === Fungsi Ambil Data Izin/Sakit Bulan Ini ===
+async function getMonthlyIzin(nik, month, year) {
+  try {
+    const [rows] = await pool.query(`
+      SELECT tgl_izin, status, keterangan, status_approved
+      FROM pengajuan_izin
+      WHERE nik = ? 
+        AND MONTH(tgl_izin) = ? 
+        AND YEAR(tgl_izin) = ?
+      ORDER BY tgl_izin ASC
+    `, [nik, month, year]);
+
+    return rows;
+  } catch (error) {
+    console.error('Error saat mengambil data izin/sakit:', error);
+    return [];
+  }
+}
+
 // ========== Cron Job Functions (check new checkins / checkouts / reminders) ==========
 async function checkNewCheckIns(client) {
   let connection;
