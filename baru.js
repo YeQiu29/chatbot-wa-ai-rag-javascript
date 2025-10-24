@@ -258,10 +258,10 @@ async function checkNewCheckIns(client) {
 FROM presensi p
 JOIN karyawan k ON p.nik = k.nik
 WHERE p.tgl_presensi = ?
-  AND p.jam_in IS NOT NULL
-  AND p.jam_out IS NULL
-  AND k.no_hp IS NOT NULL AND k.no_hp != ''
-  AND p.jam_in >= DATE_SUB(NOW(), INTERVAL 10 MINUTE)`,
+AND p.jam_in IS NOT NULL
+AND p.jam_out IS NULL
+AND k.no_hp IS NOT NULL AND k.no_hp != ''
+AND p.jam_in >= DATE_SUB(NOW(), INTERVAL 10 MINUTE)`,
       [today]
     );
 
@@ -293,9 +293,9 @@ async function checkNewCheckOuts(client) {
 FROM presensi p
 JOIN karyawan k ON p.nik = k.nik
 WHERE p.tgl_presensi = ?
-  AND p.jam_out IS NOT NULL
-  AND p.jam_out >= DATE_SUB(NOW(), INTERVAL 10 MINUTE)
-  AND k.no_hp IS NOT NULL AND k.no_hp != ''`,
+AND p.jam_out IS NOT NULL
+AND p.jam_out >= DATE_SUB(NOW(), INTERVAL 10 MINUTE)
+AND k.no_hp IS NOT NULL AND k.no_hp != ''`,
       [today]
     );
 
@@ -326,7 +326,7 @@ async function checkAndSendMorningReminders(client) {
 FROM karyawan k
 LEFT JOIN presensi p ON k.nik = p.nik AND p.tgl_presensi = ?
 WHERE p.jam_in IS NULL
-  AND k.no_hp IS NOT NULL AND k.no_hp != ''`,
+AND k.no_hp IS NOT NULL AND k.no_hp != ''`,
       [today]
     );
 
@@ -357,9 +357,9 @@ async function sendAfternoonReminders(client) {
 FROM presensi p
 JOIN karyawan k ON p.nik = k.nik
 WHERE p.tgl_presensi = ?
-  AND p.jam_in IS NOT NULL
-  AND p.jam_out IS NULL
-  AND k.no_hp IS NOT NULL AND k.no_hp != ''`,
+AND p.jam_in IS NOT NULL
+AND p.jam_out IS NULL
+AND k.no_hp IS NOT NULL AND k.no_hp != ''`,
       [today]
     );
 
