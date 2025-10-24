@@ -496,21 +496,17 @@ client.on('message', async (msg) => {
 
         if (attendanceData.length > 0) {
             attendanceData.forEach(record => {
+            // Format tanggal ke DD/MM
             const date = new Date(record.tgl_presensi).toLocaleDateString('id-ID', {
                 day: '2-digit',
                 month: '2-digit'
             });
 
-            const jamInStr = record.jam_in ? `${record.tgl_presensi}T${record.jam_in}` : null;
-            const jamOutStr = record.jam_out ? `${record.tgl_presensi}T${record.jam_out}` : null;
+            // Ambil jam langsung dari database, potong ke HH:MM
+            const jamIn = record.jam_in ? record.jam_in.toString().trim().substring(0, 5) : '-';
+            const jamOut = record.jam_out ? record.jam_out.toString().trim().substring(0, 5) : '-';
 
-            const jamIn = jamInStr
-                ? new Date(jamInStr).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
-                : '-';
-            const jamOut = jamOutStr
-                ? new Date(jamOutStr).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
-                : '-';
-
+            // Format teks dengan spasi dan enter rapi
             responseMessage += `🗓️ *Tanggal:* ${date}\n⏰ *Masuk:* ${jamIn}\n🏁 *Pulang:* ${jamOut}\n\n`;
             });
         } else {
