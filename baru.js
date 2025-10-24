@@ -495,20 +495,29 @@ client.on('message', async (msg) => {
         let responseMessage = `*📅 Absensi ${employee.nama_lengkap} Bulan Ini (${currentMonth}/${currentYear}):*\n\n`;
 
         if (attendanceData.length > 0) {
+            let totalKehadiran = 0;
+            let totalTerlambat = 0;
+
             attendanceData.forEach(record => {
-            // Format tanggal ke DD/MM
             const date = new Date(record.tgl_presensi).toLocaleDateString('id-ID', {
                 day: '2-digit',
                 month: '2-digit'
             });
 
-            // Ambil jam langsung dari database, potong ke HH:MM
             const jamIn = record.jam_in ? record.jam_in.toString().trim().substring(0, 5) : '-';
             const jamOut = record.jam_out ? record.jam_out.toString().trim().substring(0, 5) : '-';
 
-            // Format teks dengan spasi dan enter rapi
+            // Hitung kehadiran
+            if (record.jam_in) totalKehadiran++;
+
+            // Hitung keterlambatan (jika jam_in lewat dari 08:00)
+            if (record.jam_in && record.jam_in > '08:00') totalTerlambat++;
+
             responseMessage += `🗓️ *Tanggal:* ${date}\n⏰ *Masuk:* ${jamIn}\n🏁 *Pulang:* ${jamOut}\n\n`;
             });
+
+            responseMessage += `📊 *Total Kehadiran:* ${totalKehadiran} hari\n`;
+            responseMessage += `⚠️ *Total Terlambat:* ${totalTerlambat} kali`;
         } else {
             responseMessage += 'Tidak ada data absensi untuk bulan ini.';
         }
